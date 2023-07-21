@@ -1,6 +1,6 @@
 import { AutoFocus, Camera, CameraType } from 'expo-camera';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { router } from 'expo-router';
@@ -12,15 +12,12 @@ import {
 } from '@expo/vector-icons';
 import ConfirmPhoto from './ConfirmPhoto';
 import { setQRData as setQR, setImageLink } from '../store/slices/appSlice';
-import { Button } from './Button';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../constants';
 
 export default function CameraScreen() {
     const dispatch = useDispatch();
-    const [permission, requestPermission] = Camera.useCameraPermissions();
-    const [permissionM, requestPermissionM] = MediaLibrary.usePermissions();
     const [cameraInstance, setCameraInstance] = useState(null);
     const cameraRef = useCallback((ref) => {
         setCameraInstance(ref);
@@ -32,22 +29,6 @@ export default function CameraScreen() {
     const { width, height } = Dimensions.get('window');
     const previewHeight = width * (16 / 9);
     const imagePadding = (height - previewHeight) / 2;
-
-    if (!permission || !permissionM) return null;
-
-    if (!permission.granted || !permissionM.granted) {
-        return (
-            <View style={[styles.container, styles.mainBackgroundColor, styles.padding5]}>
-                <Text style={{ marginTop: 'auto', marginBottom: 'auto', textAlign: 'center' }}>
-                    Please grant permissions
-                </Text>
-                <Button onPress={() => {
-                    requestPermission();
-                    requestPermissionM();
-                }} text="Grant Permission" />
-            </View>
-        )
-    }
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -85,7 +66,7 @@ export default function CameraScreen() {
         console.log('takePicture')
         try {
             if (cameraInstance) {
-                const result = await cameraInstance.takePictureAsync({ 
+                const result = await cameraInstance.takePictureAsync({
                     skipProcessing: true,
                     quality: 0.5,
                 });
@@ -199,7 +180,7 @@ const styles = StyleSheet.create({
     mainBackgroundColor: {
         backgroundColor: colors.mainBackgroundColor
     },
-    padding5:{
-        padding:20
+    padding5: {
+        padding: 20
     }
 });

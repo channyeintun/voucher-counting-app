@@ -13,6 +13,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import Summary from "./Summary";
 import { useSelector } from "react-redux";
+import { Timestamp } from "firebase/firestore";
 
 export default function DashboardScreen() {
 
@@ -116,6 +117,7 @@ export default function DashboardScreen() {
                     onRefresh={() => setRefresh(true)}
                     data={result.data.filter(it => it.username === username)}
                     renderItem={({ item }) => {
+                        const date = new Timestamp(+item.date.seconds, +item.date.nanoseconds).toDate();
                         return (
                             <Pressable onPress={() => {
                                 selectVoucher(item);
@@ -135,7 +137,7 @@ export default function DashboardScreen() {
                                             <Text style={styles.text}>Amount: {formatCurrency(item.amount)}</Text>
                                         </View>
                                         <View>
-                                            <Text style={styles.text}>Date: {dayjs(item.date).format("DD / MM / YY")}</Text>
+                                            <Text style={styles.text}>Date: {dayjs(date).format("DD / MM / YY")}</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -149,7 +151,7 @@ export default function DashboardScreen() {
                 height: '100%',
                 justifyContent: 'center',
                 alignItems: 'center'
-            }}><Text style={{ color: colors.primaryTextColor }}>ဘာမှမရှိတော့ဘူး</Text></View>)}
+            }}><Text style={{ color: colors.primaryTextColor }}>ဒေတာမရှိပါ</Text></View>)}
             <Pressable
                 onPress={() => {
                     router.replace("/camera");

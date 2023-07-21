@@ -1,12 +1,15 @@
-import { collection, query, where, getDoc, setDoc, getDocs, deleteDoc, updateDoc, doc } from "firebase/firestore";
+import { collection, query, where, getDoc, setDoc, getDocs, deleteDoc, updateDoc, doc, Timestamp } from "firebase/firestore";
 import { db } from '../firebaseConfig';
 
-const COLLECTION_NAME = 'royal-express'
+const COLLECTION_NAME = 'royal-express' // production
+// const COLLECTION_NAME = 'dev-db' // development
 
 const collectionRef = collection(db, COLLECTION_NAME);
 
 export const addVoucher = async (voucher) => {
-    voucher.date = (voucher.date).setHours(0, 0, 0, 0);
+    const date = (voucher.date).setHours(0, 0, 0, 0);
+    const timestamp = Timestamp.fromDate(new Date(date));
+    voucher.date = timestamp;
     const voucherDocRef = doc(collectionRef, voucher.code);
     const voucherDoc = await getDoc(voucherDocRef);
 
@@ -34,12 +37,14 @@ export const fetchVouchers = async (filters) => {
     }
 
     if (amount) {
-        q = query(q, where('amount', '>=', amount.min), where('amount', '<', amount.max));
+        q = query(q, where('amount', '>=', amount.min), where('amount', '<=', amount.max));
     }
 
     if (date) {
-        const timestamp = date;
-        let q = query(collectionRef, where('date', '>=', timestamp));
+        const startTimestamp = Timestamp.fromDate(new Date(date));
+        const endDate = new Date(new Date(date).setHours(23, 59, 59, 999));
+        const endTimestamp = Timestamp.fromDate(endDate);
+        q = query(collectionRef, where('date', '>=', startTimestamp), where('date', '<=', endTimestamp));
     }
 
     const querySnapshot = await getDocs(q);
@@ -47,7 +52,7 @@ export const fetchVouchers = async (filters) => {
     querySnapshot.forEach((doc) => {
         result.push(doc.data());
     });
-
+    console.log(result.length > 0 ? result[0].date : '')
     console.log('Fetched vouchers.');
     return result;
 }
