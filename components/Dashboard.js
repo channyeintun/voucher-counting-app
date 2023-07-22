@@ -120,7 +120,6 @@ export default function DashboardScreen() {
                             )
                             }
                             onChange={(index) => {
-                                selectIndex(index);
                                 const item = listData[index];
                                 selectVoucher(item);
                             }}
