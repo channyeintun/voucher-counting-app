@@ -4,7 +4,8 @@ const initialState = {
   status: "idle",
   username: "",
   qrData: "",
-  imageLink: ""
+  imageLink: "",
+  auth:false
 };
 
 export const appSlice = createSlice({
@@ -20,10 +21,13 @@ export const appSlice = createSlice({
     setImageLink: (state, action) => {
       console.log('stateImage',action.payload)
       state.imageLink = action.payload;
+    },
+    setAuth: (state, action) => {
+      state.auth = action.payload
     }
   },
 });
 
-export const { setUsername, setQRData, setImageLink } = appSlice.actions;
+export const { setUsername, setQRData, setImageLink, setAuth } = appSlice.actions;
 
 export default appSlice.reducer;

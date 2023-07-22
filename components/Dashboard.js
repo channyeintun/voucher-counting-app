@@ -14,6 +14,9 @@ import ImageViewer from 'react-native-image-zoom-viewer';
 import Summary from "./Summary";
 import { useSelector } from "react-redux";
 import { Timestamp } from "firebase/firestore";
+import DropDownPicker from 'react-native-dropdown-picker';
+import * as SecureStore from "expo-secure-store";
+import Dialog from "react-native-dialog";
 
 export default function DashboardScreen() {
 
@@ -28,19 +31,21 @@ export default function DashboardScreen() {
     const [deleteVoucher, deleteResult] = useDeleteVoucherMutation();
     const [deleteVoucherByUsername, deleteByUserResult] = useDeleteVouchersByUsernameMutation();
     const [isEnabled, setEnabled] = useState(false);
-    const [withCurrentUser, setWithCurrentUser] = useState(true);
     const [selectedIndex, selectIndex] = useState(null);
+    const [selectedUser, selectUser] = useState(username);
+    const [openUserSelect, setOpenUserSelect] = useState(false);
+    const [botName, setBotName] = useState("text");
+    const [dialogVisible, setDialogVisible] = useState(false);
+    const [dialogInput, setDialogInput] = useState(botName);
 
-    const toggleSwitch = () => {
-        if (isEnabled) {
-            setDateFilter(today);
-            console.log('set today')
-        } else {
-            setDateFilter(yesterday);
-            console.log('set yesterday')
-        }
-        setEnabled(previousState => !previousState);
-    }
+    useEffect(() => {
+        (async () => {
+            await SecureStore.getItemAsync('botName').then((value) => {
+                setBotName(value);
+                setDialogInput(value);
+            });
+        })()
+    }, [])
 
     useEffect(() => {
         fetchVouchers(serializedFilters);
@@ -57,6 +62,13 @@ export default function DashboardScreen() {
     }, [refreshing])
 
     useEffect(() => {
+        if (result && result.data && result.data.length > 0) {
+            if (!result.data.find(it => it.username === selectedUser)) {
+                selectUser(result.data[0].username);
+            }
+        } else {
+            selectUser(username);
+        }
         if (result && result.isError) {
             showToast(result.error);
         }
@@ -89,15 +101,28 @@ export default function DashboardScreen() {
 
     const group = result?.data?.reduce(groupByUser, {});
 
-    const filterByUsername = (name, eqORneq) => {
-        return eqORneq ? name === username : name !== username;
+    const filterByUsername = (name, selected) => {
+        return name === selected ?? username;
     }
 
-    const listData = result?.data?.filter(it => filterByUsername(it.username, withCurrentUser));
+    const listData = result?.data?.filter(it => filterByUsername(it.username, selectedUser));
 
     const imageUrls = listData?.map(it => ({ url: it.imageUri })) ?? [];
 
-    const cleanBots = () => deleteVoucherByUsername('text');
+    const cleanBots = () => deleteVoucherByUsername(botName);
+
+    const userList = group ? Object.keys(group).map(it => ({ label: it, value: it })) : [];
+
+    const toggleSwitch = () => {
+        if (isEnabled) {
+            setDateFilter(today);
+            console.log('set today')
+        } else {
+            setDateFilter(yesterday);
+            console.log('set yesterday')
+        }
+        setEnabled(previousState => !previousState);
+    }
 
     return (
         <View style={styles.container}>
@@ -135,6 +160,7 @@ export default function DashboardScreen() {
                             imageUrls={imageUrls} />
                         <View style={styles.positionStack}>
                             <Button
+                                disabled={selectVoucher.username !== username}
                                 onPress={() => {
                                     Alert.alert(
                                         'ဖျက်ဖို့သေချာပြီလား ?',
@@ -156,7 +182,10 @@ export default function DashboardScreen() {
                                     );
                                 }}
                                 danger
-                                icon={<MaterialIcons name="delete" size={24} color="red" />} />
+                                icon={<MaterialIcons
+                                    name="delete"
+                                    size={24}
+                                    color={selectVoucher.username !== username ? "gray" : "red"} />} />
                         </View>
                     </View>
                 </View>
@@ -173,22 +202,58 @@ export default function DashboardScreen() {
                         value={isEnabled}
                     />
                     <Text style={{ fontSize: 20 }}>{isEnabled ? 'Yesterday' : 'Today '}</Text>
+                    <View style={{ marginStart: 'auto', marginEnd: 10 }}>
+                        <DropDownPicker
+                            placeholder="Select User"
+                            style={{ width: 120, borderColor: 'transparent' }}
+                            containerStyle={{ width: 120 }}
+                            labelStyle={{ fontSize: 20 }}
+                            closeOnBackPressed={true}
+                            open={openUserSelect}
+                            value={selectedUser}
+                            items={userList}
+                            setOpen={setOpenUserSelect}
+                            setValue={selectUser}
+                            showTickIcon={false}
+                            showArrowIcon={false}
+                            listMode="SCROLLVIEW"
+                            disableBorderRadius
+                        />
+                    </View>
                     <Pressable
-                        style={{ marginStart: 'auto', marginEnd: 20 }}
-                        onPress={() => setWithCurrentUser(prev => !prev)}>
-                        <Text style={{ fontSize: 20, color: '#000', opacity: withCurrentUser ? 1 : 0.5 }}>{username}</Text>
-                    </Pressable>
-                    <Pressable
+                        onLongPress={() => {
+
+                            setDialogVisible(true)
+                        }}
                         onPress={cleanBots}
                         style={{ marginEnd: 10 }}
                     >
                         <MaterialCommunityIcons name="robot-dead" size={40} color={deleteByUserResult.isLoading ? "#ebf1ff" : "black"} />
                     </Pressable>
+                    <Dialog.Container visible={dialogVisible}>
+                        <Dialog.Description>
+                            ဒေတာလျှောက်ထည့်နေတဲ့
+                            user ကိုထည့်ပါ ဥပမာ "text"၊
+                            သတိထားပါ ထည့်လိုက်တဲ့ user ရဲ့
+                            voucher တွေအကုန်ဖျက်ပစ်မှာပါ
+                        </Dialog.Description>
+                        <Dialog.Input
+                            style={{ color: colors.primaryTextColor }}
+                            placeholder="အသစ်ထည့်ပြီးပြောင်းပါ"
+                            value={dialogInput}
+                            onChangeText={text => setDialogInput(text)}></Dialog.Input>
+                        <Dialog.Button label="Cancel" onPress={() => setDialogVisible(false)} />
+                        <Dialog.Button label="Update" onPress={() => {
+                            setBotName(dialogInput);
+                            SecureStore.setItemAsync('botName', dialogInput);
+                            setDialogVisible(false);
+                        }} />
+                    </Dialog.Container>
                 </View>
                 <FlatList
                     refreshing={refreshing}
                     onRefresh={() => setRefresh(true)}
-                    data={result.data.filter(it => filterByUsername(it.username, withCurrentUser))}
+                    data={result.data.filter(it => filterByUsername(it.username, selectedUser))}
                     renderItem={({ item, index }) => {
                         const date = new Timestamp(+item.date.seconds, +item.date.nanoseconds).toDate();
                         return (
