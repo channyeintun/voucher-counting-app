@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import dayjs from "dayjs";
 
 import { colors } from "../constants";
-import { useFetchVouchersQuery, useDeleteVoucherMutation, firestoreApi } from "../store/apis/firestoreApi";
+import { useDeleteVoucherMutation, firestoreApi } from "../store/apis/firestoreApi";
 import { formatCurrency, showToast } from "../utils";
 import { Button } from "./Button";
 import { router } from "expo-router";
