@@ -141,6 +141,7 @@ export default function DashboardScreen() {
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                         <ImageViewer
+                            saveToLocalByLongPress={false}
                             enablePreload
                             useNativeDriver
                             loadingRender={() => (
@@ -160,7 +161,7 @@ export default function DashboardScreen() {
                             imageUrls={imageUrls} />
                         <View style={styles.positionStack}>
                             <Button
-                                disabled={selectVoucher.username !== username}
+                                disabled={selectedVoucher?.username !== username}
                                 onPress={() => {
                                     Alert.alert(
                                         'ဖျက်ဖို့သေချာပြီလား ?',
@@ -185,7 +186,7 @@ export default function DashboardScreen() {
                                 icon={<MaterialIcons
                                     name="delete"
                                     size={24}
-                                    color={selectVoucher.username !== username ? "gray" : "red"} />} />
+                                    color={selectedVoucher?.username !== username ? "gray" : "red"} />} />
                         </View>
                     </View>
                 </View>
