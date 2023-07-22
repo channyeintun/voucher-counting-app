@@ -3,7 +3,7 @@ import { FlatList, View, StyleSheet, Text, Switch, Modal, Pressable, Alert } fro
 import Spinner from 'react-native-loading-spinner-overlay';
 import { useEffect } from "react";
 import dayjs from "dayjs";
-
+import { Skeleton } from '@rneui/themed';
 import { colors } from "../constants";
 import { useDeleteVoucherMutation, firestoreApi } from "../store/apis/firestoreApi";
 import { formatCurrency, showToast } from "../utils";
@@ -28,6 +28,7 @@ export default function DashboardScreen() {
     const [deleteVoucher, deleteResult] = useDeleteVoucherMutation();
     const [isEnabled, setEnabled] = useState(false);
     const [withCurrentUser, setWithCurrentUser] = useState(true);
+    const [selectedIndex, selectIndex] = useState(null);
 
     const toggleSwitch = () => {
         if (isEnabled) {
@@ -88,6 +89,10 @@ export default function DashboardScreen() {
         return eqORneq ? name === username : name !== username;
     }
 
+    const listData = result?.data?.filter(it => filterByUsername(it.username, withCurrentUser));
+
+    const imageUrls = listData?.map(it => ({ url: it.imageUri })) ?? [];
+
     return (
         <View style={styles.container}>
             <Spinner
@@ -105,9 +110,24 @@ export default function DashboardScreen() {
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
                         <ImageViewer
+                            enablePreload
+                            useNativeDriver
+                            loadingRender={() => (
+                                <Skeleton
+                                    animation="pulse"
+                                    width='100%'
+                                    height='100%' />
+                            )
+                            }
+                            onChange={(index) => {
+                                selectIndex(index);
+                                const item = listData[index];
+                                selectVoucher(item);
+                            }}
+                            pageAnimateTime={300}
+                            index={selectedIndex}
                             style={styles.image}
-                            imageUrls={[{ url: selectedVoucher?.imageUri }]}
-                            renderIndicator={() => null} />
+                            imageUrls={imageUrls} />
                         <View style={styles.positionStack}>
                             <Button
                                 onPress={() => {
@@ -158,10 +178,11 @@ export default function DashboardScreen() {
                     refreshing={refreshing}
                     onRefresh={() => setRefresh(true)}
                     data={result.data.filter(it => filterByUsername(it.username, withCurrentUser))}
-                    renderItem={({ item }) => {
+                    renderItem={({ item, index }) => {
                         const date = new Timestamp(+item.date.seconds, +item.date.nanoseconds).toDate();
                         return (
                             <Pressable onPress={() => {
+                                selectIndex(index);
                                 selectVoucher(item);
                             }}>
                                 <View style={styles.card}>
