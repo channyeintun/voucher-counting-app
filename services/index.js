@@ -23,7 +23,7 @@ export const addVoucher = async (voucher) => {
 }
 
 export const fetchVouchers = async (filters) => {
-
+    console.log('filters',filters)
     const { code, username, amount, date } = JSON.parse(filters);
 
     let q = collectionRef;
@@ -41,6 +41,7 @@ export const fetchVouchers = async (filters) => {
     }
 
     if (date) {
+        console.log(date)
         const startTimestamp = Timestamp.fromDate(new Date(date));
         const endDate = new Date(new Date(date).setHours(23, 59, 59, 999));
         const endTimestamp = Timestamp.fromDate(endDate);
@@ -52,7 +53,6 @@ export const fetchVouchers = async (filters) => {
     querySnapshot.forEach((doc) => {
         result.push(doc.data());
     });
-    console.log(result.length > 0 ? result[0].date : '')
     console.log('Fetched vouchers.');
     return result;
 }

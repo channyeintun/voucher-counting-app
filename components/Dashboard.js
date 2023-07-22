@@ -1,11 +1,11 @@
-import { useCallback, useState } from "react";
-import { FlatList, View, StyleSheet, Text, Image, Modal, Pressable, Alert } from "react-native";
+import { useState } from "react";
+import { FlatList, View, StyleSheet, Text, Switch, Modal, Pressable, Alert } from "react-native";
 import Spinner from 'react-native-loading-spinner-overlay';
 import { useEffect } from "react";
 import dayjs from "dayjs";
 
 import { colors } from "../constants";
-import { useFetchVouchersQuery, useDeleteVoucherMutation } from "../store/apis/firestoreApi";
+import { useFetchVouchersQuery, useDeleteVoucherMutation, firestoreApi } from "../store/apis/firestoreApi";
 import { formatCurrency, showToast } from "../utils";
 import { Button } from "./Button";
 import { router } from "expo-router";
@@ -17,26 +17,47 @@ import { Timestamp } from "firebase/firestore";
 
 export default function DashboardScreen() {
 
+    const today = dayjs().startOf('day').valueOf();
+    const yesterday = dayjs().subtract(1, 'day').startOf('day').valueOf();
     const username = useSelector(state => state.app.username);
-    const serializedFilters = JSON.stringify({ date: ((new Date()).setHours(0, 0, 0, 0)).valueOf() });
-    const result = useFetchVouchersQuery(serializedFilters);
+    const [dateFilter, setDateFilter] = useState(today);
+    const serializedFilters = JSON.stringify({ date: dateFilter });
+    const [fetchVouchers, result] = firestoreApi.endpoints.fetchVouchers.useLazyQuery();
     const [selectedVoucher, selectVoucher] = useState(null);
     const [refreshing, setRefresh] = useState(false);
     const [deleteVoucher, deleteResult] = useDeleteVoucherMutation();
+    const [isEnabled, setEnabled] = useState(false);
+
+    const toggleSwitch = () => {
+        if (isEnabled) {
+            setDateFilter(today);
+            console.log('set today')
+        } else {
+            setDateFilter(yesterday);
+            console.log('set yesterday')
+        }
+        setEnabled(previousState => !previousState);
+    }
 
     useEffect(() => {
-        if (result.isError) {
-            showToast(result.error);
-        }
+        fetchVouchers(serializedFilters);
+    }, [isEnabled])
 
+    useEffect(() => {
         (async () => {
-            if (result && refreshing) {
-                await result.refetch();
+            if (refreshing) {
+                await fetchVouchers(serializedFilters);
                 setRefresh(false);
             }
         })();
 
-    }, [result, refreshing])
+    }, [refreshing])
+
+    useEffect(() => {
+        if (result && result.isError) {
+            showToast(result.error);
+        }
+    }, [result])
 
     useEffect(() => {
 
@@ -112,6 +133,17 @@ export default function DashboardScreen() {
             </Modal>
             {(result && result.data && result.data.length > 0) ? <>
                 {group && Object.keys(group).length > 0 && <Summary data={group} />}
+                <View style={{ justifyContent: 'flex-start', alignItems: 'center', margin: 5, flexDirection: 'row' }}>
+                    <Switch
+                        style={{ width: 50, marginRight: 10 }}
+                        trackColor={{ false: colors.accentColor, true: '#81b0ff' }}
+                        thumbColor={isEnabled ? '#f5dd4b' : colors.secondaryBackgroundColor}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={toggleSwitch}
+                        value={isEnabled}
+                    />
+                    <Text style={{ fontSize: 20 }}>{isEnabled ? 'Yesterday' : 'Today '}</Text>
+                </View>
                 <FlatList
                     refreshing={refreshing}
                     onRefresh={() => setRefresh(true)}
@@ -151,13 +183,22 @@ export default function DashboardScreen() {
                 height: '100%',
                 justifyContent: 'center',
                 alignItems: 'center'
-            }}><Text style={{ color: colors.primaryTextColor }}>ဒေတာမရှိပါ</Text></View>)}
+            }}>
+                <Switch
+                    trackColor={{ false: '#767577', true: '#81b0ff' }}
+                    thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    ios_backgroundColor="#3e3e3e"
+                    onValueChange={toggleSwitch}
+                    value={isEnabled}
+                />
+                <Text style={{ color: colors.primaryTextColor }}>{isEnabled ? 'မနေ့ကမရှိပါ' : 'ဒီနေ့မရှိပါ'}</Text>
+            </View>)}
             <Pressable
                 onPress={() => {
                     router.replace("/camera");
                 }}
                 style={styles.floatingActionButton}>
-                <MaterialIcons name="add-a-photo" size={50} color="#007ea7" />
+                <MaterialIcons name="add-a-photo" size={50} color="#015CE6" />
             </Pressable>
         </View>
     )

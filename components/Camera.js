@@ -34,7 +34,7 @@ export default function CameraScreen() {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             aspect: [4, 3],
-            quality: 0.5,
+            quality: 0.75,
         });
 
         console.log(result);
@@ -68,7 +68,7 @@ export default function CameraScreen() {
             if (cameraInstance) {
                 const result = await cameraInstance.takePictureAsync({
                     skipProcessing: true,
-                    quality: 0.5,
+                    quality: 0.75,
                 });
                 console.log(result, typeof result)
                 console.log(result.uri)

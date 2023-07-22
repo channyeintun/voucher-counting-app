@@ -56,7 +56,7 @@ export default function Form() {
             const manipResult = await manipulateAsync(
                 image,
                 [{ resize: { width: 500 } }],
-                { compress: 0.6, format: SaveFormat.JPEG }
+                { compress: 0.75, format: SaveFormat.JPEG }
             );
             const binaryData = await FileSystem.readAsStringAsync(manipResult.uri, { encoding: FileSystem.EncodingType.Base64 });
             const { secure_url } = await uploadImage(binaryData);
@@ -85,7 +85,7 @@ export default function Form() {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             aspect: [4, 3],
-            quality: 1,
+            quality: 0.75,
         });
 
         console.log(result);
