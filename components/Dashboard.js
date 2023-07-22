@@ -27,6 +27,7 @@ export default function DashboardScreen() {
     const [refreshing, setRefresh] = useState(false);
     const [deleteVoucher, deleteResult] = useDeleteVoucherMutation();
     const [isEnabled, setEnabled] = useState(false);
+    const [withCurrentUser, setWithCurrentUser] = useState(true);
 
     const toggleSwitch = () => {
         if (isEnabled) {
@@ -82,6 +83,10 @@ export default function DashboardScreen() {
     }
 
     const group = result?.data?.reduce(groupByUser, {});
+
+    const filterByUsername = (name, eqORneq) => {
+        return eqORneq ? name === username : name !== username;
+    }
 
     return (
         <View style={styles.container}>
@@ -143,11 +148,16 @@ export default function DashboardScreen() {
                         value={isEnabled}
                     />
                     <Text style={{ fontSize: 20 }}>{isEnabled ? 'Yesterday' : 'Today '}</Text>
+                    <Pressable
+                        style={{ marginStart: 'auto', marginEnd: 10 }}
+                        onPress={() => setWithCurrentUser(prev => !prev)}>
+                        <Text style={{ fontSize: 20, color: '#000', opacity: withCurrentUser ? 1 : 0.5 }}>{username}</Text>
+                    </Pressable>
                 </View>
                 <FlatList
                     refreshing={refreshing}
                     onRefresh={() => setRefresh(true)}
-                    data={result.data.filter(it => it.username === username)}
+                    data={result.data.filter(it => filterByUsername(it.username, withCurrentUser))}
                     renderItem={({ item }) => {
                         const date = new Timestamp(+item.date.seconds, +item.date.nanoseconds).toDate();
                         return (

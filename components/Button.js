@@ -10,13 +10,14 @@ export function Button({
       containerStyle = {},
       disabled = false,
       primary = false,
-      icon = null
+      icon = null,
+      wrapperStyle = {}
 }) {
       return (
             <Pressable
                   disabled={disabled}
                   onPress={onPress}
-                  style={[styles.touchable]}>
+                  style={[styles.touchable, wrapperStyle]}>
                   <View style={[styles.button, {
                         width,
                         height,
