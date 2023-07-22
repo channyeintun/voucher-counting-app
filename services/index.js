@@ -72,6 +72,16 @@ export const deleteVouchersByDate = async (date) => {
     });
 }
 
+export const deleteVoucherByUsername= async (username) => {
+    const q = query(collectionRef, where("username", "==", username));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+        console.log(`Voucher with ID ${doc.code} deleted.`);
+    });
+}
+
 export const updateAmount = async (code, newAmount) => {
     const voucherDocRef = doc(collectionRef, code);
     await updateDoc(voucherDocRef, { amount: newAmount });

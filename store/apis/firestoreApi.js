@@ -54,6 +54,18 @@ export const firestoreApi = createApi({
             },
             invalidatesTags: ['Voucher']
         }),
+        deleteVouchersByUsername: builder.mutation({
+            async queryFn(username) {
+                try {
+                    await services.deleteVoucherByUsername(username);
+                    return { data: null }
+                } catch (error) {
+                    console.error(error?.message);
+                    return { error: error?.message };
+                }
+            },
+            invalidatesTags: ['Voucher']
+        }),
         updateVoucher: builder.mutation({
             async queryFn(voucherCode, newAmount) {
                 try {
@@ -75,5 +87,6 @@ export const {
     useDeleteVoucherMutation,
     useFetchVouchersQuery,
     useDeleteVouchersMutation,
+    useDeleteVouchersByUsernameMutation,
 } = firestoreApi
 

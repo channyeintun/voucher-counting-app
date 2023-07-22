@@ -5,11 +5,11 @@ import { useEffect } from "react";
 import dayjs from "dayjs";
 import { Skeleton } from '@rneui/themed';
 import { colors } from "../constants";
-import { useDeleteVoucherMutation, firestoreApi } from "../store/apis/firestoreApi";
+import { useDeleteVoucherMutation, useDeleteVouchersByUsernameMutation, firestoreApi } from "../store/apis/firestoreApi";
 import { formatCurrency, showToast } from "../utils";
 import { Button } from "./Button";
 import { router } from "expo-router";
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import Summary from "./Summary";
 import { useSelector } from "react-redux";
@@ -26,6 +26,7 @@ export default function DashboardScreen() {
     const [selectedVoucher, selectVoucher] = useState(null);
     const [refreshing, setRefresh] = useState(false);
     const [deleteVoucher, deleteResult] = useDeleteVoucherMutation();
+    const [deleteVoucherByUsername, deleteByUserResult] = useDeleteVouchersByUsernameMutation();
     const [isEnabled, setEnabled] = useState(false);
     const [withCurrentUser, setWithCurrentUser] = useState(true);
     const [selectedIndex, selectIndex] = useState(null);
@@ -59,7 +60,10 @@ export default function DashboardScreen() {
         if (result && result.isError) {
             showToast(result.error);
         }
-    }, [result])
+        if (deleteByUserResult && deleteByUserResult.isError) {
+            showToast(deleteByUserResult.error);
+        }
+    }, [result, deleteByUserResult])
 
     useEffect(() => {
 
@@ -92,6 +96,8 @@ export default function DashboardScreen() {
     const listData = result?.data?.filter(it => filterByUsername(it.username, withCurrentUser));
 
     const imageUrls = listData?.map(it => ({ url: it.imageUri })) ?? [];
+
+    const cleanBots = () => deleteVoucherByUsername('text');
 
     return (
         <View style={styles.container}>
@@ -168,9 +174,15 @@ export default function DashboardScreen() {
                     />
                     <Text style={{ fontSize: 20 }}>{isEnabled ? 'Yesterday' : 'Today '}</Text>
                     <Pressable
-                        style={{ marginStart: 'auto', marginEnd: 10 }}
+                        style={{ marginStart: 'auto', marginEnd: 20 }}
                         onPress={() => setWithCurrentUser(prev => !prev)}>
                         <Text style={{ fontSize: 20, color: '#000', opacity: withCurrentUser ? 1 : 0.5 }}>{username}</Text>
+                    </Pressable>
+                    <Pressable
+                        onPress={cleanBots}
+                        style={{ marginEnd: 10 }}
+                    >
+                        <MaterialCommunityIcons name="robot-dead" size={40} color={deleteByUserResult.isLoading ? "#ebf1ff" : "black"} />
                     </Pressable>
                 </View>
                 <FlatList
