@@ -19,11 +19,12 @@ export default function App() {
   const [permissionM, requestPermissionM] = MediaLibrary.usePermissions();
 
   useEffect(() => {
+    checkUsername();
     setMounted(true);
     auth.onAuthStateChanged((user) => {
       dispatch(setAuth(!!user));
     })
-    checkUsername();
+
   }, [])
 
   async function checkUsername() {
