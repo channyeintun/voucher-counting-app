@@ -1,8 +1,7 @@
 import { collection, query, where, getDoc, setDoc, getDocs, deleteDoc, updateDoc, doc, Timestamp } from "firebase/firestore";
 import { db } from '../firebaseConfig';
 
-const COLLECTION_NAME = 'royal-express' // production
-// const COLLECTION_NAME = 'dev-db' // development
+const COLLECTION_NAME = 'voucher-collection-23-07-2023'
 
 const collectionRef = collection(db, COLLECTION_NAME);
 

@@ -4,6 +4,7 @@
 node_modules/
 *.apk
 *.aab
+./firebase*.js
 
 #Environment variables
 .env

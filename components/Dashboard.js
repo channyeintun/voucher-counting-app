@@ -41,8 +41,10 @@ export default function DashboardScreen() {
     useEffect(() => {
         (async () => {
             await SecureStore.getItemAsync('botName').then((value) => {
-                setBotName(value);
-                setDialogInput(value);
+                if (value) {
+                    setBotName(value);
+                    setDialogInput(value);
+                }
             });
         })()
     }, [])
