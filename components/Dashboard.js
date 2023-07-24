@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FlatList, View, StyleSheet, Text, Switch, Modal, Pressable, Alert } from "react-native";
+import { FlatList, View, StyleSheet, Text, Switch, Modal, Pressable, Alert, Dimensions } from "react-native";
 import Spinner from 'react-native-loading-spinner-overlay';
 import { useEffect } from "react";
 import dayjs from "dayjs";
@@ -37,6 +37,10 @@ export default function DashboardScreen() {
     const [botName, setBotName] = useState("text");
     const [dialogVisible, setDialogVisible] = useState(false);
     const [dialogInput, setDialogInput] = useState(botName);
+
+    const { width, height } = Dimensions.get('window');
+    const previewHeight = width * (16 / 9);
+    const imagePadding = (height - previewHeight) / 2;
 
     useEffect(() => {
         (async () => {
@@ -159,9 +163,9 @@ export default function DashboardScreen() {
                             }}
                             pageAnimateTime={300}
                             index={selectedIndex}
-                            style={styles.image}
+                            style={{ width: '100%', height: '100%', marginTop: imagePadding, marginBottom: imagePadding }}
                             imageUrls={imageUrls} />
-                        <View style={styles.positionStack}>
+                        <View style={[styles.positionStack, { bottom: 10 + imagePadding }]}>
                             <Button
                                 disabled={selectedVoucher?.username !== username}
                                 onPress={() => {
@@ -374,10 +378,6 @@ const styles = StyleSheet.create({
         textAlign: "center",
         color: colors.primaryTextColor
     },
-    image: {
-        width: '100%',
-        aspectRatio: 1
-    },
     floatingActionButton: {
         position: 'absolute',
         width: 50,
@@ -396,7 +396,6 @@ const styles = StyleSheet.create({
     },
     positionStack: {
         position: 'absolute',
-        top: 10,
         justifyContent: 'center',
         flex: 1,
         zIndex: 10
