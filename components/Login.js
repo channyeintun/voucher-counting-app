@@ -10,7 +10,7 @@ import { signInAnonymously } from "firebase/auth/react-native";
 import { auth } from "../firebaseConfig";
 import { showToast } from "../utils";
 import { colors } from "../constants";
-import { Camera } from 'expo-camera';
+import { useCameraPermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 
 export default function Login() {
@@ -19,7 +19,7 @@ export default function Login() {
     console.log('User is', user)
     const [username, setUserName] = useState(user);
     const [loading, setLoading] = useState(false);
-    const [permission, requestPermission] = Camera.useCameraPermissions();
+    const [permission, requestPermission] = useCameraPermissions();
     const [permissionM, requestPermissionM] = MediaLibrary.usePermissions();
 
     useEffect(() => {

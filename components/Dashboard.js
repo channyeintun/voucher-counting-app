@@ -9,7 +9,7 @@ import { useDeleteVoucherMutation, useDeleteVouchersByUsernameMutation, firestor
 import { formatCurrency, showToast } from "../utils";
 import { Button } from "./Button";
 import { router } from "expo-router";
-import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import Summary from "./Summary";
 import { useSelector } from "react-redux";
@@ -165,7 +165,7 @@ export default function DashboardScreen() {
                             index={selectedIndex}
                             style={{ width: '100%', height: '100%', marginTop: imagePadding, marginBottom: imagePadding }}
                             imageUrls={imageUrls} />
-                        <View style={[styles.positionStack, { bottom: 10 + imagePadding }]}>
+                        <View style={[styles.positionStack, { bottom: 10 + imagePadding, flexDirection: 'row', gap: 80 }]}>
                             <Button
                                 disabled={selectedVoucher?.username !== username}
                                 onPress={() => {
@@ -193,13 +193,19 @@ export default function DashboardScreen() {
                                     name="delete"
                                     size={24}
                                     color={selectedVoucher?.username !== username ? "gray" : "red"} />} />
+
+                            <Button
+                                onPress={() => {
+                                    selectVoucher(null);
+                                }}
+                                icon={<AntDesign name="closecircleo" size={24} color="black" />} />
                         </View>
                     </View>
                 </View>
             </Modal>
             {(result && result.data && result.data.length > 0) ? <>
                 {group && Object.keys(group).length > 0 && <Summary data={group} />}
-                <View style={{ justifyContent: 'flex-start', alignItems: 'center', margin: 5, flexDirection: 'row' }}>
+                <View style={{ justifyContent: 'flex-start', alignItems: 'center', margin: 5, flexDirection: 'row', zIndex: 11 }}>
                     <Switch
                         style={{ width: 50, marginRight: 10 }}
                         trackColor={{ false: colors.accentColor, true: '#81b0ff' }}

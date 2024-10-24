@@ -1,6 +1,5 @@
-import { AutoFocus, Camera, CameraType } from 'expo-camera';
-import { BarCodeScanner } from 'expo-barcode-scanner';
-import { useCallback, useEffect, useState } from 'react';
+import { CameraView, scanFromURLAsync } from 'expo-camera';
+import { useCallback, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { router } from 'expo-router';
@@ -42,7 +41,7 @@ export default function CameraScreen() {
         if (!result.canceled) {
             const uri = result.assets[0].uri;
             setImageUri(uri);
-            const barcodeResult = await BarCodeScanner.scanFromURLAsync(uri, [BarCodeScanner.Constants.BarCodeType.qr]);
+            const barcodeResult = await scanFromURLAsync(uri, ['qr']);
             if (barcodeResult.length > 0) {
                 const qrResult = barcodeResult[0];
                 setQRData(qrResult?.data);
@@ -63,7 +62,6 @@ export default function CameraScreen() {
     }
 
     async function onTakePicture() {
-        console.log('takePicture')
         try {
             if (cameraInstance) {
                 const result = await cameraInstance.takePictureAsync({
@@ -101,21 +99,17 @@ export default function CameraScreen() {
                     onSave={onSave}
                     imageUri={imageUri} />
             ) : (
-                <Camera
+                <CameraView
                     ratio="16:9"
                     style={[styles.cameraPreview, { marginTop: imagePadding, marginBottom: imagePadding }]}
-                    type={CameraType.back}
+                    facing="back"
                     ref={cameraRef}
-                    focusDepth={0}
-                    barCodeScannerSettings={{
-                        barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-                    }}
-                    onBarCodeScanned={(data) => {
+                    onBarcodeScanned={(data) => {
                         if (data?.data) {
                             setQRData(data.data);
                         }
                     }}
-                    autoFocus={AutoFocus.on}>
+                    autoFocus="on">
 
                     {QRData && <View style={styles.qrPosition}>
                         <Text style={styles.text}>{QRData}</Text>
@@ -134,7 +128,7 @@ export default function CameraScreen() {
                             <FontAwesome name="dashboard" size={35} color="white" />
                         </TouchableOpacity>
                     </View>
-                </Camera>)}
+                </CameraView>)}
         </View>
     );
 }
